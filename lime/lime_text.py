@@ -351,8 +351,7 @@ class LimeTextExplainer(object):
         """
 
         if kernel is None:
-            def kernel(d, kernel_width):
-                return np.sqrt(np.exp(-(d ** 2) / kernel_width ** 2))
+            kernel = self.default_kernel
 
         kernel_fn = partial(kernel, kernel_width=kernel_width)
 
@@ -366,6 +365,9 @@ class LimeTextExplainer(object):
         self.mask_string = mask_string
         self.split_expression = split_expression
         self.char_level = char_level
+
+    def default_kernel(self, d, kernel_width):
+        return np.sqrt(np.exp(-(d ** 2) / kernel_width ** 2))
 
     def explain_instance(self,
                          text_instance,

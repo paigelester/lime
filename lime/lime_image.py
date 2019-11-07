@@ -116,14 +116,16 @@ class LimeImageExplainer(object):
         kernel_width = float(kernel_width)
 
         if kernel is None:
-            def kernel(d, kernel_width):
-                return np.sqrt(np.exp(-(d ** 2) / kernel_width ** 2))
+            kernel = self.default_kernel
 
         kernel_fn = partial(kernel, kernel_width=kernel_width)
 
         self.random_state = check_random_state(random_state)
         self.feature_selection = feature_selection
         self.base = lime_base.LimeBase(kernel_fn, verbose, random_state=self.random_state)
+
+    def default_kernel(self, d, kernel_width):
+        return np.sqrt(np.exp(-(d ** 2) / kernel_width ** 2))
 
     def explain_instance(self, image, classifier_fn, labels=(1,),
                          hide_color=None,

@@ -240,8 +240,7 @@ class LimeTabularExplainer(object):
         kernel_width = float(kernel_width)
 
         if kernel is None:
-            def kernel(d, kernel_width):
-                return np.sqrt(np.exp(-(d ** 2) / kernel_width ** 2))
+            kernel = self.default_kernel
 
         kernel_fn = partial(kernel, kernel_width=kernel_width)
 
@@ -273,6 +272,9 @@ class LimeTabularExplainer(object):
                                                  float(sum(frequencies)))
             self.scaler.mean_[feature] = 0
             self.scaler.scale_[feature] = 1
+
+    def default_kernel(self, d, kernel_width):
+        return np.sqrt(np.exp(-(d ** 2) / kernel_width ** 2))
 
     @staticmethod
     def convert_and_round(values):

@@ -40,7 +40,7 @@ class BaseDiscretizer():
                                if x not in categorical_features])
         self.data_stats = data_stats
         self.names = {}
-        self.lambdas = {}
+        self.feature_qts = {}
         self.means = {}
         self.stds = {}
         self.mins = {}
@@ -69,8 +69,8 @@ class BaseDiscretizer():
                                            (qts[i], name, qts[i + 1]))
             self.names[feature].append('%s > %.2f' % (name, qts[n_bins - 1]))
 
-            self.lambdas[feature] = lambda x, qts=qts: np.searchsorted(qts, x)
-            discretized = self.lambdas[feature](data[:, feature])
+            self.feature_qts[feature] = qts
+            discretized = self.discretize_feature(qts, data[:, feature])
 
             # If data stats are provided no need to compute the below set of details
             if data_stats:
@@ -87,6 +87,9 @@ class BaseDiscretizer():
                 self.stds[feature].append(std)
             self.mins[feature] = [boundaries[0]] + qts.tolist()
             self.maxs[feature] = qts.tolist() + [boundaries[1]]
+
+    def discretize_feature(self, qts, data):
+        return np.searchsorted(qts, data)
 
     @abstractmethod
     def bins(self, data, labels):
@@ -105,12 +108,13 @@ class BaseDiscretizer():
             numpy array of same dimension, discretized.
         """
         ret = data.copy()
-        for feature in self.lambdas:
+        for feature in self.feature_qts:
+            feature_qts = self.feature_qts[feature]
+
             if len(data.shape) == 1:
-                ret[feature] = int(self.lambdas[feature](ret[feature]))
+                ret[feature] = int(self.discretize_feature(feature_qts, ret[feature]))
             else:
-                ret[:, feature] = self.lambdas[feature](
-                    ret[:, feature]).astype(int)
+                ret[:, feature] = self.discretize_feature(feature_qts, ret[:, feature]).astype(int)
         return ret
 
     def get_undiscretize_values(self, feature, values):
